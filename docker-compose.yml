@@ -1,0 +1,48 @@
+version: "3.7"
+services:
+    app:
+        build:
+            args:
+                user: developer
+                uid: 1000
+            context: ./
+            dockerfile: Dockerfile
+        image: laravel-app
+        container_name: laravel-app-container
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        networks:
+            - my-network
+    db:
+        image: mysql:8.0
+        container_name: laravel-app-container-name
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: db_laravel_app
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_PASSWORD: laravel
+            MYSQL_USER: laravel
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        volumes:
+            - ./docker-compose/mysql:/dock  er-entrypoint-initdb.d
+        ports:
+            - "3306:3306"  # Map MySQL port to host
+        networks:
+            - my-network
+    nginx:
+        image: nginx:alpine
+        container_name: laravel-nginx-container-name
+        restart: unless-stopped
+        ports:
+            - 8000:80
+        volumes:
+            - ./:/var/www
+            - ./docker-compose/nginx:/etc/nginx/conf.d/
+        networks:
+            - my-network
+networks:
+    my-network:
+      driver: bridge
